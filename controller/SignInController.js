@@ -12,7 +12,7 @@ exports.SignIn = async (req, res) => {
         if (doseExist) {
             const check = await bcrypt.compare(plainPass,doseExist.Pass);
             if (check) {
-                jwt.sign({Email:doseExist.Email},process.env.SECRET_KEY,(err,token)=>{
+                jwt.sign({doseExist},process.env.SECRET_KEY,(err,token)=>{
                     if(err){
                         throw new Error(err);
                     }else{
@@ -44,3 +44,40 @@ exports.SignIn = async (req, res) => {
     });
   }
 };
+
+
+
+
+exports.verify = (req,res)=>{
+    const token = req.headers['authorization'].replace(/"|'/g, '');
+    console.log(token);
+    // const userID = decodedToken.userID;
+    // console.log(userID);
+    if(token){
+        jwt.verify(token,process.env.SECRET_KEY,(err,decodedToken)=>{
+            if(err){
+                console.log(err);
+                res.status(400).json({
+                    status:false,
+                    UserID:undefined,
+                    UserName:undefined
+                });
+            }else{
+                console.log(decodedToken);
+                res.status(200).json({
+                    status:true,
+                    UserID:decodedToken.doseExist._id,
+                    UserName:decodedToken.doseExist.Name
+                });
+            }
+        });
+    }else{
+        // res.end(token);
+        res.status(400).json({
+            status:false,
+            UserID:undefined,
+            UserName:undefined
+        });
+    }
+
+}
